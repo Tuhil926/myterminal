@@ -14,7 +14,7 @@ int main()
 			add_history(command);
 		}
 		if (try_other_commands(command) && custom_commands(command)){
-			//system(command);
+			system(command);
 		}
 	}
 	return 0;
