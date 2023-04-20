@@ -89,11 +89,13 @@ int parse_cp_opt(char* options, struct cp_opt * opts){
 	return 0;
 }
 
-int mycp(char* options){
+int mycp(char* options, int should_move){
 	struct cp_opt opts;
 	if (parse_cp_opt(options, &opts)){
 		return 1;
 	}
+
+	char buff[4096];
 
 	char* destination = opts.filenames[opts.number_of_files - 1];
 
@@ -118,11 +120,30 @@ int mycp(char* options){
 		}else{
 			printf("creating new file!\n");
 			// create new file
+			FILE* newfile = fopen(opts.filenames[1], "w");
+			FILE* original = fopen(opts.filenames[0], "r");
+			while (fgets(buff, 4096, original)){
+				fputs(buff, newfile);
+			}
+			fclose(original);
+			fclose(newfile);
+
 		}
 	}else{
 		if (S_ISDIR(stat_buf.st_mode)){
 			printf("putting files in this directory!\n");
 			// put the files in this directory
+			char newfile_path[256];
+			for (int i = 0; i < opts.number_of_files - 1; i++){
+				sprintf(newfile_path, "%s/%s", destination, opts.filenames[i]);
+				FILE* newfile = fopen(newfile_path, "w");
+				FILE* original = fopen(opts.filenames[0], "r");
+				while (fgets(buff, 4096, original)){
+					fputs(buff, newfile);
+				}
+				fclose(original);
+				fclose(newfile);
+			}
 		}else if (opts.number_of_files != 2){
 			printf("Too many files given! cannot copy multiple files to a single file!\n");
 			return 1;
@@ -133,6 +154,13 @@ int mycp(char* options){
 			}else{
 				printf("overwriting the file!\n");
 				// overwrite the file
+				FILE* newfile = fopen(opts.filenames[1], "w");
+				FILE* original = fopen(opts.filenames[0], "r");
+				while (fgets(buff, 4096, original)){
+					fputs(buff, newfile);
+				}
+				fclose(original);
+				fclose(newfile);
 			}
 		}
 	}
