@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <pwd.h>
 #include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
 // options to include: -e -a -f -F
 
 struct ps_opt{
@@ -18,7 +20,8 @@ struct process{
 	char process_name[64];
 	int pid;
 	int ppid;
-	char UID[64];
+	int UID;
+	char username[64];
 	int C;
 	long int size;
 	long int RSS;
@@ -84,7 +87,7 @@ int parse_ps_opt(char* options, struct ps_opt * opts){
 }
 
 void print_processes(struct process* process, struct ps_opt* opts){
-	printf("%s %d %d %ld %ld %d %s %s\n", process->UID, process->pid, process->ppid, process->size, process->RSS, process->PSR, process->STIME, process->process_name);
+	printf("%20s %6d %6d %10ld %10ld %2d %10s %5s %s\n", process->username, process->pid, process->ppid, process->size, process->RSS, process->PSR, process->STIME, process->TTY, process->process_name);
 }
 
 int myps(char* options){
@@ -98,7 +101,7 @@ int myps(char* options){
 	}
 	int n = 0; // number of processes
 
-	char stats_path[32];
+	char stats_path[512];
 	uid_t uid;
 	long int stime;
 
@@ -106,10 +109,7 @@ int myps(char* options){
 		if (dir->d_name[0] == '.' || dir->d_name[0] < 48 || dir->d_name[0] > 57){
 			continue;
 		}
-		stats_path[0] = '\0';
-		strcpy(stats_path, "/proc/");
-		strcpy(stats_path + strlen(stats_path), dir->d_name);
-		strcpy(stats_path + strlen(stats_path), "/stat");
+		sprintf(stats_path, "/proc/%s/stat", dir->d_name);
 		FILE* process = fopen(stats_path, "r");
 		if (!process){
 			//printf("Not possible to open\n");
@@ -125,12 +125,8 @@ int myps(char* options){
 				processes[n].process_name[strlen(processes[n].process_name) - 1] = '\0';
 			}else if (i == 3){
 				fscanf(process, "%d ", &(processes[n].ppid));
-			}else if (i == 23){
-				fscanf(process, "%ld ", &(processes[n].RSS));
 			}else if (i == 38){
 				fscanf(process, "%d ", &(processes[n].PSR));
-			}else if (i == 22){
-				fscanf(process, "%ld ", &(processes[n].size));
 			}else if (i == 14){
 				//printf("hsdjf\n");
 				fscanf(process, "%ld ", &stime);
@@ -144,10 +140,37 @@ int myps(char* options){
 
 		fclose(process);
 
-		//printf("%s\n", stats_path);
-		printf("bhifdd\n");
-		strcpy(processes[n].UID, "why tf doesn't this work");//getpwuid(processes[n].pid)->pw_name);
-		printf("works!\n");
+		sprintf(stats_path, "/proc/%s/statm", dir->d_name);
+		process = fopen(stats_path, "r");
+
+		fscanf(process, "%ld", &(processes[n].size));
+		fscanf(process, "%ld", &(processes[n].RSS));
+		processes[n].RSS *= 4;
+
+		fclose(process);
+
+		sprintf(stats_path, "/proc/%s/status", dir->d_name);
+		process = fopen(stats_path, "r");
+
+		char line[1000];
+		while(fgets(line, 1000, process)){
+			if (sscanf(line, "Uid:\t%d", &(processes[n].UID))){
+				break;
+			}
+		}
+		fclose(process);
+
+		sprintf(stats_path, "/proc/%s/fd/0", dir->d_name);
+		int fd = open(stats_path, 'r');
+		char* tty = ttyname(fd);
+		if (tty == NULL){
+			strcpy(processes[n].TTY, "?");	
+		}else{
+			strcpy(processes[n].TTY, ttyname(fd) + 5);
+		}
+		
+
+		strcpy(processes[n].username, getpwuid(processes[n].UID)->pw_name);
 		n++;
 	}
 	closedir(d);
