@@ -1,0 +1,24 @@
+NAME:
+	mycp
+SYNOPSIS:
+	mycp [options]... SOURCE_FILE[S] DIRECTORY
+	mycp [options]... SOURCE_FILE DESTINATION_FILE
+DESCRIPTION:
+	mycp copies the source-file[s] into the destinations, which can either be a directory or a file
+	cannot copy multiple files to a single file
+
+	options:
+		-f
+			force copy the files, and remove files if they already exist in the destination
+		-i
+			interactive:
+			prompt user before overwriting a file
+		-n
+			no overwrite:
+			do not copy file that already exist at the destination
+		-v
+			verbose:
+			give useful information about the status of the files being copied
+
+AUTHOR:
+	Kaipa Venkata Tuhil

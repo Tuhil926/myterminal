@@ -1,0 +1,40 @@
+NAME:
+	myps
+SYNOPSIS:
+	myps [options]
+DESCRIPTION:
+	myps prints some information about the active processes in your computer
+
+	options:
+		-e
+			lists out all the processes
+		-a
+			lists out all processes excluding nonterminal processes
+		-F
+			lists out the processes in a long listing format
+			the fields are: 
+				1. UID
+				2. PID
+				3. PPID
+				4. C
+				5. SIZE
+				6. RSS
+				7. PSR
+				8. STIME
+				9. Terminal Type
+				10. TIME
+				11. process name
+		-f
+			lists out the processes in more detail, but more concise that -F
+				the fields are: 
+				1. UID
+				2. PID
+				3. PPID
+				4. C
+				5. STIME
+				6. Terminal Type
+				7. TIME
+				8. process name	
+
+AUTHOR:
+	Kaipa Venkata Tuhil

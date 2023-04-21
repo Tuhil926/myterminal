@@ -15,6 +15,8 @@ struct ls_opt{
 	bool F;
 	bool S;
 	bool r;
+	bool file_given;
+	char file[64];
 };
 
 struct file{
@@ -31,6 +33,8 @@ int parse_opt(char* options, struct ls_opt * opts){
 	opts->F = false;
 	opts->S = false;
 	opts->r = false;
+	opts->file_given = false;
+	strcpy(opts->file, ".");
 
 	char* temp = options - 1;
 
@@ -42,6 +46,7 @@ int parse_opt(char* options, struct ls_opt * opts){
 		if (*temp == ' ' && *(temp + 1) != ' '){
 			tokens[number_of_tokens] = temp + 1;
 			number_of_tokens++;
+			*temp = '\0';
 		}
 		temp++;
 	}
@@ -52,8 +57,13 @@ int parse_opt(char* options, struct ls_opt * opts){
 			continue;
 		}
 		if (*character != '-'){
-			printf("invalid argument: %s\n", character);
-			return 1;
+			if (opts->file_given){
+				printf("Error: too many arguments!\n");
+				return 1;
+			}
+			opts->file_given = true;
+			strcpy(opts->file, character);
+			continue;
 		}
 		character++;
 		while (*character != ' ' && *character != '\0'){
@@ -181,13 +191,18 @@ void sort_stats(struct file files[256], int number_of_files, struct ls_opt* opts
 }
 
 int myls(char* options){
+	struct ls_opt opts;
+	if (parse_opt(options, &opts)){
+		return 1;
+	}
+
 	DIR *d;
 	struct dirent *dir;
-	d = opendir(".");
+	d = opendir(opts.file);
 	struct file files[256];
 	char* filenames[256];
 	if (!d){
-		printf("error opening current directory.\n");
+		printf("error opening directory.\n");
 		return 1;
 	}
 	int number_of_files = 0;
@@ -196,15 +211,15 @@ int myls(char* options){
 	int max_grpname_len = 0;
 	int max_size_strlen = 0;
 
-
+	struct stat stat_buf;
 	while ((dir = readdir(d)) != NULL){
-		struct stat stat_buf;
 		stat(dir->d_name, &stat_buf);
 		files[number_of_files].stats = stat_buf;
 
 		strcpy((files[number_of_files].username), getpwuid(stat_buf.st_uid)->pw_name);
 		strcpy((files[number_of_files].groupname), getgrgid(stat_buf.st_gid)->gr_name);
 		sprintf((files[number_of_files].size), "%ld", stat_buf.st_size);
+		//printf("%ld", files[number_of_files].stats.st_size);
 		if (strlen(files[number_of_files].username) > max_usrname_len){
 			max_usrname_len = strlen(files[number_of_files].username);
 		}
@@ -219,11 +234,6 @@ int myls(char* options){
 		number_of_files++;
 	}
 	closedir(d);
-
-	struct ls_opt opts;
-	if (parse_opt(options, &opts)){
-		return 1;
-	}
 
 	sort_stats(files, number_of_files, &opts);
 

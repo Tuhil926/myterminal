@@ -1,0 +1,24 @@
+NAME:
+	mymv
+SYNOPSIS:
+	mymv [options]... SOURCE_FILE[S] DIRECTORY
+	mymv [options]... SOURCE_FILE DESTINATION_FILE
+DESCRIPTION:
+	mycp moves the source-file[s] into the destinations, which can either be a directory or a file
+	cannot move multiple files to a single file
+
+	options:
+		-f
+			force move the files, and remove files if they already exist in the destination
+		-i
+			interactive:
+			prompt user before overwriting a file
+		-n
+			no overwrite:
+			do not move file that already exist at the destination
+		-v
+			verbose:
+			give useful information about the status of the files being moved
+
+AUTHOR:
+	Kaipa Venkata Tuhil

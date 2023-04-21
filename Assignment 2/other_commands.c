@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+int man(char*);
 
 int try_cd(char* command){
 	if (strlen(command) >= 4){
@@ -30,11 +31,22 @@ int try_exit(char* command){
 	return 1;
 }
 
+int try_man(char* command){
+	if (strlen(command) > 3 && command[3] == ' '){
+		if (command[0] == 'm' && command[1] == 'a' && command[2] == 'n'){
+			return man(command + 4);
+		}
+	}
+	return 1;	
+}
+
 int try_other_commands(char* command){
 	int res_cd = try_cd(command);
 	
 	int res_exit = try_exit(command);
 
-	return res_exit && res_cd;
+	int res_man = try_man(command);
+
+	return res_exit && res_cd && res_man;
 	
 }

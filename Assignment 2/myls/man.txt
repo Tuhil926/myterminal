@@ -1,0 +1,29 @@
+NAME:
+	myls
+SYNOPSIS:
+	myls [options]...[file]...
+DESCRIPTION:
+	myls lists out all the files in the current directory, or the directory specified by [file]
+
+	options:
+		-l
+			lists out the files in a long listing format
+			the fields are: 
+				1. permissions
+				2. num. of links
+				3. username
+				4. groupname
+				5. file size
+				6. last modified time
+				7. file name
+		-a
+			lists out all files, including hidden files
+		-F
+			indicates the file type after the name of the file
+			(/ after directories, * after executables)
+		-S
+			sorts the files in decreasing order of size
+		-r
+			reverses the order of sorting
+AUTHOR:
+	Kaipa Venkata Tuhil

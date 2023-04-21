@@ -1,0 +1,19 @@
+NAME:
+	mygrep
+SYNOPSIS:
+	mygrep [options]... WORD FILE[S]
+DESCRIPTION:
+	searches for WORD in the given FILE[S] and prints the lines in the file which have the word
+
+	options:
+		-i
+			ignore uppercase vs lowercase
+		-v
+			invert match
+		-c
+			output only the number of matching lines for each file
+		-n
+			display the line number before each matching line
+
+AUTHOR:
+	Kaipa Venkata Tuhil
