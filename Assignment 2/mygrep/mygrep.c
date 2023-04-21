@@ -6,6 +6,7 @@
 #include <pwd.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <ctype.h>
 // options to include: -i -v -c -n -s
 
 struct grep_opt{
@@ -75,6 +76,12 @@ int parse_grep_opt(char* options, struct grep_opt * opts){
 	return 0;
 }
 
+void lowercase(char* line){
+	for (int i = 0; i < strlen(line); i++){
+		line[i] = tolower(line[i]);
+	}
+}
+
 int mygrep(char* options){
 	struct grep_opt opts;
 	if (parse_grep_opt(options, &opts)){
@@ -82,16 +89,22 @@ int mygrep(char* options){
 	}
 
 	char* search_term = opts.args[0];
+	if (opts.i){
+		lowercase(search_term);
+	}
 
 	struct stat stat_buf;
 
 	FILE* search_file;
 	char* line;
-	size_t len;
-	ssize_t read;
+	char line_to_print[4096];
+	size_t len = 0;
+	ssize_t read = 0;
+	int number_of_matches;
+	int line_number;
 
 	for (int i = 1; i < opts.number_of_args; i++){
-		printf("searching in file: %s\n", opts.args[i]);
+		//printf("%s\n", opts.args[i]);
 		if (stat(opts.args[i], &stat_buf)){
 			printf("File \"%s\" doesn't exist!\n", opts.args[i]);
 			return 1;
@@ -100,16 +113,44 @@ int mygrep(char* options){
 				printf("\"%s\" is a directory! This command cannot look through a directory!\n", opts.args[i]);
 				return 1;
 			}else{
+				number_of_matches = 0;
+				line_number = 0;
 				// search the file for the word
 				search_file = fopen(opts.args[i], "r");
 				while ((read = getline(&line, &len, search_file)) != -1){
-					if (strlen(line) >= strlen(search_term) && strstr(line, search_term) != NULL){
-						printf("%s", line);
+					line_number++;
+					strcpy(line_to_print, line);
+					if (opts.i){
+						lowercase(line);
 					}
-					free(line);
+					if ((strlen(line) >= strlen(search_term) && strstr(line, search_term) != NULL) ^ opts.v){
+						if (!opts.c){
+							if (!opts.n){
+								if (opts.number_of_args > 2){
+									printf("%s: %s", opts.args[i], line_to_print);
+								}else{
+									printf("%s", line_to_print);
+								}
+							}else{
+								if (opts.number_of_args > 2){
+									printf("%s:%d: %s", opts.args[i], line_number, line_to_print);
+								}else{
+									printf("%d: %s", line_number, line_to_print);
+								}
+							}
+						}
+						number_of_matches++;
+					}
 					//printf("line: %s", line);
 				}
 				fclose(search_file);
+				if (opts.c){
+					if (opts.number_of_args > 2){
+						printf("%s: %d\n", opts.args[i], number_of_matches);
+					}else{
+						printf("%d\n", number_of_matches);
+					}
+				}
 			}
 		}
 	}
