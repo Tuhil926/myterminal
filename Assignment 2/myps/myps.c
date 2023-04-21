@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/sysinfo.h>
 // options to include: -e -a -f -F
 
 struct ps_opt{
@@ -27,7 +28,8 @@ struct process{
 	long int size;
 	long int RSS;
 	int PSR;
-	char STIME[10];
+	char STIME[32];
+	long int STIME_int;
 	int TTY_num;
 	char TTY[10];
 	long int TIME;
@@ -136,8 +138,14 @@ int myps(char* options){
 	int n = 0; // number of processes
 
 	char stats_path[512];
+	struct sysinfo sys_info;
+	sysinfo(&sys_info);
+	long uptime = sys_info.uptime;
+	long now = time(NULL);
+	long boot_time = now - uptime;
 	uid_t uid;
 	long int stime;
+	long int utime;
 
 	while ((dir = readdir(d)) != NULL){
 		if (dir->d_name[0] == '.' || dir->d_name[0] < 48 || dir->d_name[0] > 57){
@@ -161,15 +169,21 @@ int myps(char* options){
 				fscanf(process, "%d ", &(processes[n].ppid));
 			}else if (i == 38){
 				fscanf(process, "%d ", &(processes[n].PSR));
-			}else if (i == 14){
-				//printf("hsdjf\n");
-				fscanf(process, "%ld ", &stime);
-				get_time_str(stime, processes[n].STIME);
-				//printf("bhifdd\n");
+			//}else if (i == 14){
+			// 	//printf("hsdjf\n");
+			// 	fscanf(process, "%ld ", &stime);
+			// 	get_time_str(stime, processes[n].STIME);
+			// 	//printf("bhifdd\n");
 			}else if (i == 13){
+				fscanf(process, "%ld ", &utime);
 				fscanf(process, "%ld ", &stime);
-				stime /= sysconf(2);
-				make_to_hms_format(stime, processes[n].time_str);
+				//stime /= sysconf(_SC_CLK_TCK);
+				make_to_hms_format((stime + utime)/sysconf(_SC_CLK_TCK), processes[n].time_str);
+				i++;
+			}else if (i == 21){
+				fscanf(process, "%ld ", &(processes[n].STIME_int));
+				processes[n].STIME_int /= sysconf(_SC_CLK_TCK);
+				get_time_str(boot_time + processes[n].STIME_int, processes[n].STIME);
 			}
 			else{
 				fscanf(process, "%*s ");
