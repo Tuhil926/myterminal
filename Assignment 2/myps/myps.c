@@ -7,6 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/types.h>
 // options to include: -e -a -f -F
 
 struct ps_opt{
@@ -27,14 +28,31 @@ struct process{
 	long int RSS;
 	int PSR;
 	char STIME[10];
+	int TTY_num;
 	char TTY[10];
-	char time[8];
+	long int TIME;
+	char time_str[10];
 };
 
 void get_time_str(time_t time, char* str){
 	char* full_time = ctime(&time);
 	full_time[16] = '\0';
 	strcpy(str, full_time + 11);
+}
+
+void make_to_hms_format(long int time_in_sec, char* str){
+	int sec = time_in_sec % 60;
+	time_in_sec /= 60;
+	int min = time_in_sec % 60;
+	time_in_sec /= 60;
+	int hrs = time_in_sec % 60;
+	strcpy(str, "00:00:00");
+	str[0] = hrs/10 + 48;
+	str[1] = hrs%10 + 48;
+	str[3] = min/10 + 48;
+	str[4] = min%10 + 48;
+	str[6] = sec/10 + 48;
+	str[7] = sec%10 + 48;
 }
 
 int parse_ps_opt(char* options, struct ps_opt * opts){
@@ -87,7 +105,23 @@ int parse_ps_opt(char* options, struct ps_opt * opts){
 }
 
 void print_processes(struct process* process, struct ps_opt* opts){
-	printf("%20s %6d %6d %10ld %10ld %2d %10s %5s %s\n", process->username, process->pid, process->ppid, process->size, process->RSS, process->PSR, process->STIME, process->TTY, process->process_name);
+	if (opts->F){
+		printf("%20s %6d %6d %10ld %10ld %2d %10s %5s %s %s\n", process->username, process->pid, process->ppid, process->size, process->RSS, process->PSR, process->STIME, process->TTY, process->time_str, process->process_name);
+	}else if (opts->f){
+		printf("%20s %6d %6d %10ld %10s %5s %s\n", process->username, process->pid, process->ppid, process->size, process->STIME, process->TTY, process->process_name);		
+	}else{
+		printf("%6d %5s %s %s\n", process->pid, process->TTY, process->time_str, process->process_name);
+	}
+}
+
+void print_headings(struct ps_opt* opts){
+	if (opts->F){
+		printf("%20s %6s %6s %10s %10s %3s %9s %5s %8s %s\n", "UID", "PID", "PPID", "SIZE", "RSS", "PSR", "STIME", "TTY", "TIME", "CMD");
+	}else if (opts->f){
+		printf("%20s %6s %6s %10s %10s %5s %s\n", "UID", "PID", "PPID", "SIZE", "STIME", "TTY", "CMD");		
+	}else{
+		printf("%6s %5s %8s %s\n", "PID", "TTY", "TIME", "CMD");
+	}
 }
 
 int myps(char* options){
@@ -132,6 +166,10 @@ int myps(char* options){
 				fscanf(process, "%ld ", &stime);
 				get_time_str(stime, processes[n].STIME);
 				//printf("bhifdd\n");
+			}else if (i == 13){
+				fscanf(process, "%ld ", &stime);
+				stime /= sysconf(2);
+				make_to_hms_format(stime, processes[n].time_str);
 			}
 			else{
 				fscanf(process, "%*s ");
@@ -162,6 +200,7 @@ int myps(char* options){
 
 		sprintf(stats_path, "/proc/%s/fd/0", dir->d_name);
 		int fd = open(stats_path, 'r');
+		processes[n].TTY_num = fd;
 		char* tty = ttyname(fd);
 		if (tty == NULL){
 			strcpy(processes[n].TTY, "?");	
@@ -180,10 +219,17 @@ int myps(char* options){
 		return 1;
 	}
 
+	sprintf(stats_path, "/proc/%d/fd/0", getpid());
+	int fd = open(stats_path, 'r');
+	char* tty = ttyname(fd) + 5;
+
+	print_headings(&opts);
 	for (int i = 0; i < n; i++){
-		print_processes(&processes[i], &opts);
+		if (opts.e || (opts.a && processes[i].TTY[0] != '?') || (strcmp(processes[i].TTY, tty) == 0)){
+			print_processes(&processes[i], &opts);
+		}
 	}
-	printf("number of processes: %d\n", n);
+	//printf("number of processes: %d\n", n);
 	
 	return 0;
 }
