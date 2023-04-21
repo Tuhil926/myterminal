@@ -25,6 +25,7 @@ int try_cd(char* command){
 int try_exit(char* command){
 	if (strlen(command) == 4 || (strlen(command) > 4 && command[4] == ' ')){
 		if (command[0] == 'e' && command[1] == 'x' && command[2] == 'i' && command[3] == 't'){
+			printf("\t\tEXITING MYSHELL\n");
 			exit(0);
 		}
 	}
