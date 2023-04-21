@@ -108,9 +108,9 @@ int parse_ps_opt(char* options, struct ps_opt * opts){
 
 void print_processes(struct process* process, struct ps_opt* opts){
 	if (opts->F){
-		printf("%20s %6d %6d %10ld %10ld %2d %10s %5s %s %s\n", process->username, process->pid, process->ppid, process->size, process->RSS, process->PSR, process->STIME, process->TTY, process->time_str, process->process_name);
+		printf("%20s %6d %6d %3d %10ld %10ld %2d %5s %5s %s %s\n", process->username, process->pid, process->ppid, process->C, process->size, process->RSS, process->PSR, process->STIME, process->TTY, process->time_str, process->process_name);
 	}else if (opts->f){
-		printf("%20s %6d %6d %10ld %10s %5s %s\n", process->username, process->pid, process->ppid, process->size, process->STIME, process->TTY, process->process_name);		
+		printf("%20s %6d %6d %3d %5s %5s %s\n", process->username, process->pid, process->ppid, process->C, process->STIME, process->TTY, process->process_name);		
 	}else{
 		printf("%6d %5s %s %s\n", process->pid, process->TTY, process->time_str, process->process_name);
 	}
@@ -118,9 +118,9 @@ void print_processes(struct process* process, struct ps_opt* opts){
 
 void print_headings(struct ps_opt* opts){
 	if (opts->F){
-		printf("%20s %6s %6s %10s %10s %3s %9s %5s %8s %s\n", "UID", "PID", "PPID", "SIZE", "RSS", "PSR", "STIME", "TTY", "TIME", "CMD");
+		printf("%20s %6s %6s %3s %10s %10s %3s %5s %5s %8s %s\n", "UID", "PID", "PPID", "C", "SIZE", "RSS", "PSR", "STIME", "TTY", "TIME", "CMD");
 	}else if (opts->f){
-		printf("%20s %6s %6s %10s %10s %5s %s\n", "UID", "PID", "PPID", "SIZE", "STIME", "TTY", "CMD");		
+		printf("%20s %6s %6s %3s %5s %5s %s\n", "UID", "PID", "PPID", "C", "STIME", "TTY", "CMD");		
 	}else{
 		printf("%6s %5s %8s %s\n", "PID", "TTY", "TIME", "CMD");
 	}
@@ -144,8 +144,8 @@ int myps(char* options){
 	long now = time(NULL);
 	long boot_time = now - uptime;
 	uid_t uid;
-	long int stime;
-	long int utime;
+	long int stime = 0;
+	long int utime = 1;
 
 	while ((dir = readdir(d)) != NULL){
 		if (dir->d_name[0] == '.' || dir->d_name[0] < 48 || dir->d_name[0] > 57){
@@ -224,6 +224,7 @@ int myps(char* options){
 		
 
 		strcpy(processes[n].username, getpwuid(processes[n].UID)->pw_name);
+		processes[n].C = processes[n].STIME_int != 0? ((stime + utime)*100/sysconf(_SC_CLK_TCK)/(now - (boot_time + processes[n].STIME_int))):0;
 		n++;
 	}
 	closedir(d);
