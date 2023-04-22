@@ -211,6 +211,8 @@ int myls(char* options){
 	int max_grpname_len = 0;
 	int max_size_strlen = 0;
 
+	int block_size = 0;
+
 	struct stat stat_buf;
 	while ((dir = readdir(d)) != NULL){
 		stat(dir->d_name, &stat_buf);
@@ -230,12 +232,24 @@ int myls(char* options){
 			max_size_strlen = strlen(files[number_of_files].size);
 		}
 
+		//block_size += stat_buf.st_blocks/2;
+
 		strcpy(files[number_of_files].filename, dir->d_name);
 		number_of_files++;
 	}
 	closedir(d);
 
 	sort_stats(files, number_of_files, &opts);
+
+	for (int i = 0; i < number_of_files; i++){
+		if (opts.a || (files[i].filename[0] != '.')){
+			block_size += files[i].stats.st_blocks/2;
+		}
+	}
+
+	if (opts.l){
+		printf("Total: %d\n", block_size);
+	}
 
 	for (int i = 0; i < number_of_files; i++){
 		print_stats(&files[i], &opts, max_usrname_len, max_grpname_len, max_size_strlen);
