@@ -5,7 +5,7 @@ int main()
 	char* command;
 	// path stores the current formatted path to be printed during prompting
 	char* path = (char *)malloc(256*sizeof(char));
-	
+
 	printf("\t\tENTERING MYSHELL\n");
 
 	while (1){

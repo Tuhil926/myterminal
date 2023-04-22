@@ -1,1 +1,1 @@
-int myls();
+int myls(char*);

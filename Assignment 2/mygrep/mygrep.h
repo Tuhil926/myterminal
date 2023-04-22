@@ -1,1 +1,1 @@
-int mygrep();
+int mygrep(char*);

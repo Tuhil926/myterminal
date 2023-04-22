@@ -121,6 +121,10 @@ int mycp(char* options, int should_move){
 			// create new file
 			FILE* newfile = fopen(opts.filenames[1], "w");
 			FILE* original = fopen(opts.filenames[0], "r");
+			if (newfile == NULL || original == NULL){
+				printf("Error opening file!\n");
+				return 1;
+			}
 			while (fgets(buff, 4096, original)){
 				fputs(buff, newfile);
 			}
@@ -147,9 +151,17 @@ int mycp(char* options, int should_move){
 			char newfile_path[256];
 			for (int i = 0; i < opts.number_of_files - 1; i++){
 				sprintf(newfile_path, "%s/%s", destination, opts.filenames[i]);
-				if (stat(newfile_path, &stat_buf) != 0 || opts.f){
+				int exists = !stat(newfile_path, &stat_buf);
+				if (!exists || opts.f){
+					if (exists && opts.f){
+						remove(newfile_path);
+					}
 					FILE* newfile = fopen(newfile_path, "w");
 					FILE* original = fopen(opts.filenames[i], "r");
+					if (newfile == NULL || original == NULL){
+						printf("Error opening file!\n");
+						return 1;
+					}
 					while (fgets(buff, 4096, original)){
 						fputs(buff, newfile);
 					}
@@ -177,6 +189,10 @@ int mycp(char* options, int should_move){
 						if (choice[0] == 'y'){
 							FILE* newfile = fopen(newfile_path, "w");
 							FILE* original = fopen(opts.filenames[i], "r");
+							if (newfile == NULL || original == NULL){
+								printf("Error opening file!\n");
+								return 1;
+							}
 							while (fgets(buff, 4096, original)){
 								fputs(buff, newfile);
 							}
@@ -195,9 +211,13 @@ int mycp(char* options, int should_move){
 						}else if (opts.v){
 							printf("didn't overwrite file: %s\n", newfile_path);
 						}
-					}else if (opts.f){
+					}else{
 						FILE* newfile = fopen(newfile_path, "w");
 						FILE* original = fopen(opts.filenames[i], "r");
+						if (newfile == NULL || original == NULL){
+							printf("Error opening file!\n");
+							return 1;
+						}
 						while (fgets(buff, 4096, original)){
 							fputs(buff, newfile);
 						}
@@ -213,10 +233,6 @@ int mycp(char* options, int should_move){
 								printf("successfully moved file: %s to directory: %s\n", opts.filenames[i], destination);
 							}
 						}
-					}
-					else{
-						printf("Error: File %s already exists!\n", newfile_path);
-						return 1;
 					}
 				}
 			}
@@ -236,6 +252,10 @@ int mycp(char* options, int should_move){
 				if (choice[0] == 'y'){
 					FILE* newfile = fopen(opts.filenames[1], "w");
 					FILE* original = fopen(opts.filenames[0], "r");
+					if (newfile == NULL || original == NULL){
+						printf("Error opening file!\n");
+						return 1;
+					}
 					while (fgets(buff, 4096, original)){
 						fputs(buff, newfile);
 					}
@@ -250,9 +270,16 @@ int mycp(char* options, int should_move){
 				}else if (opts.v){
 					printf("didn't overwrite file: %s\n", destination);
 				}
-			}else if (opts.f){
+			}else{
+				if (opts.f){
+					remove(opts.filenames[1]);
+				}
 				FILE* newfile = fopen(opts.filenames[1], "w");
 				FILE* original = fopen(opts.filenames[0], "r");
+				if (newfile == NULL || original == NULL){
+					printf("Error opening file!\n");
+					return 1;
+				}
 				while (fgets(buff, 4096, original)){
 					fputs(buff, newfile);
 				}

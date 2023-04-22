@@ -1,1 +1,1 @@
-int mycp();
+int mycp(char*, int);

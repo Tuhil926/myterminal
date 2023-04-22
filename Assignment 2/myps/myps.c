@@ -194,6 +194,9 @@ int myps(char* options){
 
 		sprintf(stats_path, "/proc/%s/statm", dir->d_name);
 		process = fopen(stats_path, "r");
+		if (process == NULL){
+			printf("Error opening file\n");
+		}
 
 		fscanf(process, "%ld", &(processes[n].size));
 		fscanf(process, "%ld", &(processes[n].RSS));
@@ -203,6 +206,9 @@ int myps(char* options){
 
 		sprintf(stats_path, "/proc/%s/status", dir->d_name);
 		process = fopen(stats_path, "r");
+		if (process == NULL){
+			printf("Error opening file\n");
+		}
 
 		char line[1000];
 		while(fgets(line, 1000, process)){

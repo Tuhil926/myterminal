@@ -1,4 +1,10 @@
-1) how to compile the myterminal application:
+1) Setup:
+	to compile this applications, you need the readline library installed
+	on your computer.
+	To install readline, run the command:
+		sudo apt-get install libreadline8 libreadline-dev
+
+2) How to compile the myterminal application:
 	open a terminal in this directory(Assignment 2) and run the command:
 		make
 	then, run the command:
@@ -7,7 +13,7 @@
 	or, you can compile and run at the same time using:
 		make run
 
-2) the commands implemented be myterminal:
+3) The commands implemented be myterminal:
 	I have implemented the following commands in my_terminal:
 	  myls
 	  myps

@@ -9,6 +9,9 @@
 #include <ctype.h>
 // options to include: -i -v -c -n
 
+#define RED "\001\033[31m\002"
+#define DEFAULT "\001\033[0m\002"
+
 struct grep_opt{
 	bool i;
 	bool v;
@@ -82,6 +85,15 @@ void lowercase(char* line){
 	}
 }
 
+void print_highlighted(char* line, char* search_term, long start, int len, struct grep_opt* opts){
+	if (opts->v){
+		printf("%s", line);
+		return;
+	}
+	*(start + line) = '\0';
+	printf("%s%s%s%s%s", line, RED, search_term, DEFAULT, line + start + len);
+}
+
 int mygrep(char* options){
 	struct grep_opt opts;
 	if (parse_grep_opt(options, &opts)){
@@ -117,25 +129,32 @@ int mygrep(char* options){
 				line_number = 0;
 				// search the file for the word
 				search_file = fopen(opts.args[i], "r");
+				if (search_file == NULL){
+					printf("Error opening file\n");
+				}
+				char* word_pos;
 				while ((read = getline(&line, &len, search_file)) != -1){
 					line_number++;
 					strcpy(line_to_print, line);
 					if (opts.i){
 						lowercase(line);
 					}
-					if ((strlen(line) >= strlen(search_term) && strstr(line, search_term) != NULL) ^ opts.v){
+					if ((strlen(line) >= strlen(search_term) && (word_pos = strstr(line, search_term)) != NULL) ^ opts.v){
 						if (!opts.c){
 							if (!opts.n){
 								if (opts.number_of_args > 2){
-									printf("%s: %s", opts.args[i], line_to_print);
+									printf("%s: ", opts.args[i]);
+									print_highlighted(line_to_print, search_term, word_pos - line, strlen(search_term), &opts);
 								}else{
-									printf("%s", line_to_print);
+									print_highlighted(line_to_print, search_term, word_pos - line, strlen(search_term), &opts);
 								}
 							}else{
 								if (opts.number_of_args > 2){
-									printf("%s:%d: %s", opts.args[i], line_number, line_to_print);
+									printf("%s:%d: ", opts.args[i], line_number);
+									print_highlighted(line_to_print, search_term, word_pos - line, strlen(search_term), &opts);
 								}else{
-									printf("%d: %s", line_number, line_to_print);
+									printf("%d: ", line_number);
+									print_highlighted(line_to_print, search_term, word_pos - line, strlen(search_term), &opts);
 								}
 							}
 						}
@@ -150,6 +169,8 @@ int mygrep(char* options){
 					}else{
 						printf("%d\n", number_of_matches);
 					}
+				}else{
+					printf("\n");
 				}
 			}
 		}
