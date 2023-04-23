@@ -237,7 +237,7 @@ int myps(char* options){
 		if (pwd != NULL){
 			strcpy(processes[n].username, pwd->pw_name);
 		}else{
-			printf("ghjgj");
+			//printf("ghjgj");
 			strcpy(processes[n].username, "NULL");
 		}
 		processes[n].C = processes[n].STIME_int != 0? ((stime + utime)*100/sysconf(_SC_CLK_TCK)/(now - (boot_time + processes[n].STIME_int))):0;

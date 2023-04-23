@@ -15,28 +15,36 @@ void print_file(char* filename){
 	fclose(file);
 }
 
-int man(char* command){
+int man(char* command, char* cwd){
 	int length = strlen(command);
+	char path[1024];
 	if (length == 4 || length > 4 && command[4] == ' '){
+		//printf("fjds\n");
 		if (command[0] == 'm' && command[1] == 'y' && command[2] == 'l' && command[3] == 's'){
-			print_file("myls/man.txt");
+			//printf("%s\n", cwd);
+			sprintf(path, "%s%s", cwd, "/myls/man.txt");
+			print_file(path);
 			return 0;
 		}
 		if (command[0] == 'm' && command[1] == 'y' && command[2] == 'p' && command[3] == 's'){
-			print_file("myps/man.txt");
+			sprintf(path, "%s%s", cwd, "/myps/man.txt");
+			print_file(path);
 			return 0;
 		}
 		if (command[0] == 'm' && command[1] == 'y' && command[2] == 'c' && command[3] == 'p'){
-			print_file("mycp_mv/man_cp.txt");
+			sprintf(path, "%s%s", cwd, "/mycp_mv/man_cp.txt");
+			print_file(path);
 			return 0;
 		}
 		if (command[0] == 'm' && command[1] == 'y' && command[2] == 'm' && command[3] == 'v'){
-			print_file("mycp_mv/man_mv.txt");
+			sprintf(path, "%s%s", cwd, "/mycp_mv/man_mv.txt");
+			print_file(path);
 			return 0;
 		}
 	}else if (length == 6 || length > 6 && command[6] == ' '){
 		if (command[0] == 'm' && command[1] == 'y' && command[2] == 'g' && command[3] == 'r' && command[4] == 'e' && command[5] == 'p'){
-			print_file("mygrep/man.txt");
+			sprintf(path, "%s%s", cwd, "/mygrep/man.txt");
+			print_file(path);
 			return 0;
 		}
 	}

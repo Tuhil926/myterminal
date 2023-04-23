@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-int man(char*);
+int man(char*, char*);
 
 int try_cd(char* command){
 	if (strlen(command) >= 4){
@@ -33,21 +33,21 @@ int try_exit(char* command){
 	return 1;
 }
 
-int try_man(char* command){
+int try_man(char* command, char* cwd){
 	if (strlen(command) > 3 && command[3] == ' '){
 		if (command[0] == 'm' && command[1] == 'a' && command[2] == 'n'){
-			return man(command + 4);
+			return man(command + 4, cwd);
 		}
 	}
 	return 1;	
 }
 
-int try_other_commands(char* command){
+int try_other_commands(char* command, char* cwd){
 	int res_cd = try_cd(command);
 	
 	int res_exit = try_exit(command);
 
-	int res_man = try_man(command);
+	int res_man = try_man(command, cwd);
 
 	return res_exit && res_cd && res_man;
 	

@@ -96,10 +96,12 @@ int mycp(char* options, int should_move){
 	}
 
 	char buff[4096];
+	char char_buf;
 
 	char* destination = opts.filenames[opts.number_of_files - 1];
 
 	struct stat stat_buf;
+	struct stat stat_buf_2;
 
 	for (int i = 0; i < opts.number_of_files - 1; i++){
 		if (stat(opts.filenames[i], &stat_buf)){
@@ -119,17 +121,24 @@ int mycp(char* options, int should_move){
 			return 1;
 		}else{
 			// create new file
-			FILE* newfile = fopen(opts.filenames[1], "w");
-			FILE* original = fopen(opts.filenames[0], "r");
+			FILE* newfile = fopen(opts.filenames[1], "wb");
+			FILE* original = fopen(opts.filenames[0], "rb");
 			if (newfile == NULL || original == NULL){
 				printf("Error opening file!\n");
 				return 1;
 			}
-			while (fgets(buff, 4096, original)){
-				fputs(buff, newfile);
+			// while (fgets(buff, 4096, original)){
+			// 	fputs(buff, newfile);
+			// }
+			//printf("lol\n");
+			while (fread(&char_buf, 1, 1, original)){
+				fwrite(&char_buf, 1, 1, newfile);
 			}
+			fflush(newfile);
 			fclose(original);
 			fclose(newfile);
+			stat(opts.filenames[0], &stat_buf_2);
+			chmod(opts.filenames[1], stat_buf_2.st_mode);
 			if (!should_move){
 				if (opts.v){
 					printf("successfully copied file: %s\n", opts.filenames[1]);
@@ -156,17 +165,20 @@ int mycp(char* options, int should_move){
 					if (exists && opts.f){
 						remove(newfile_path);
 					}
-					FILE* newfile = fopen(newfile_path, "w");
-					FILE* original = fopen(opts.filenames[i], "r");
+					FILE* newfile = fopen(newfile_path, "wb");
+					FILE* original = fopen(opts.filenames[i], "rb");
 					if (newfile == NULL || original == NULL){
 						printf("Error opening file!\n");
 						return 1;
 					}
-					while (fgets(buff, 4096, original)){
-						fputs(buff, newfile);
+					while (fread(&char_buf, 1, 1, original)){
+						fwrite(&char_buf, 1, 1, newfile);
 					}
+					fflush(newfile);
 					fclose(original);
 					fclose(newfile);
+					stat(opts.filenames[i], &stat_buf_2);
+					chmod(newfile_path, stat_buf_2.st_mode);
 					if (!should_move){
 						if (opts.v){
 							printf("successfully copied file: %s to directory: %s\n", opts.filenames[i], destination);
@@ -187,17 +199,20 @@ int mycp(char* options, int should_move){
 						printf("Would you like to overwrite file %s?(y/n): ", newfile_path);
 						fgets(choice, 128, stdin);
 						if (choice[0] == 'y'){
-							FILE* newfile = fopen(newfile_path, "w");
-							FILE* original = fopen(opts.filenames[i], "r");
+							FILE* newfile = fopen(newfile_path, "wb");
+							FILE* original = fopen(opts.filenames[i], "rb");
 							if (newfile == NULL || original == NULL){
 								printf("Error opening file!\n");
 								return 1;
 							}
-							while (fgets(buff, 4096, original)){
-								fputs(buff, newfile);
+							while (fread(&char_buf, 1, 1, original)){
+								fwrite(&char_buf, 1, 1, newfile);
 							}
+							fflush(newfile);
 							fclose(original);
 							fclose(newfile);
+							stat(opts.filenames[i], &stat_buf_2);
+							chmod(newfile_path, stat_buf_2.st_mode);
 							if (!should_move){
 								if (opts.v){
 									printf("successfully copied file: %s to directory: %s\n", opts.filenames[i], destination);
@@ -212,17 +227,20 @@ int mycp(char* options, int should_move){
 							printf("didn't overwrite file: %s\n", newfile_path);
 						}
 					}else{
-						FILE* newfile = fopen(newfile_path, "w");
-						FILE* original = fopen(opts.filenames[i], "r");
+						FILE* newfile = fopen(newfile_path, "wb");
+						FILE* original = fopen(opts.filenames[i], "rb");
 						if (newfile == NULL || original == NULL){
 							printf("Error opening file!\n");
 							return 1;
 						}
-						while (fgets(buff, 4096, original)){
-							fputs(buff, newfile);
+						while (fread(&char_buf, 1, 1, original)){
+							fwrite(&char_buf, 1, 1, newfile);
 						}
+						fflush(newfile);
 						fclose(original);
 						fclose(newfile);
+						stat(opts.filenames[i], &stat_buf_2);
+						chmod(newfile_path, stat_buf_2.st_mode);
 						if (!should_move){
 							if (opts.v){
 								printf("successfully copied file: %s to directory: %s\n", opts.filenames[i], destination);
@@ -250,17 +268,20 @@ int mycp(char* options, int should_move){
 				printf("Would you like to overwrite file %s?(y/n): ", destination);
 				fgets(choice, 128, stdin);
 				if (choice[0] == 'y'){
-					FILE* newfile = fopen(opts.filenames[1], "w");
-					FILE* original = fopen(opts.filenames[0], "r");
+					FILE* newfile = fopen(opts.filenames[1], "wb");
+					FILE* original = fopen(opts.filenames[0], "rb");
 					if (newfile == NULL || original == NULL){
 						printf("Error opening file!\n");
 						return 1;
 					}
-					while (fgets(buff, 4096, original)){
-						fputs(buff, newfile);
+					while (fread(&char_buf, 1, 1, original)){
+						fwrite(&char_buf, 1, 1, newfile);
 					}
+					fflush(newfile);
 					fclose(original);
 					fclose(newfile);
+					stat(opts.filenames[0], &stat_buf_2);
+					chmod(opts.filenames[1], stat_buf_2.st_mode);
 					if (opts.v){
 						printf("successfully overwrote file: %s to file: %s\n", opts.filenames[0], opts.filenames[1]);
 					}
@@ -274,17 +295,20 @@ int mycp(char* options, int should_move){
 				if (opts.f){
 					remove(opts.filenames[1]);
 				}
-				FILE* newfile = fopen(opts.filenames[1], "w");
-				FILE* original = fopen(opts.filenames[0], "r");
+				FILE* newfile = fopen(opts.filenames[1], "wb");
+				FILE* original = fopen(opts.filenames[0], "rb");
 				if (newfile == NULL || original == NULL){
 					printf("Error opening file!\n");
 					return 1;
 				}
-				while (fgets(buff, 4096, original)){
-					fputs(buff, newfile);
+				while (fread(&char_buf, 1, 1, original)){
+					fwrite(&char_buf, 1, 1, newfile);
 				}
+				fflush(newfile);
 				fclose(original);
 				fclose(newfile);
+				stat(opts.filenames[0], &stat_buf_2);
+				chmod(opts.filenames[1], stat_buf_2.st_mode);
 				if (opts.v){
 					printf("successfully overwrote file: %s to file: %s\n", opts.filenames[0], opts.filenames[1]);
 				}

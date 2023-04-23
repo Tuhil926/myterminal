@@ -217,9 +217,18 @@ int myls(char* options){
 	while ((dir = readdir(d)) != NULL){
 		stat(dir->d_name, &stat_buf);
 		files[number_of_files].stats = stat_buf;
-
-		strcpy((files[number_of_files].username), getpwuid(stat_buf.st_uid)->pw_name);
-		strcpy((files[number_of_files].groupname), getgrgid(stat_buf.st_gid)->gr_name);
+		struct passwd* pwd = getpwuid(stat_buf.st_uid);
+		if (pwd != NULL){
+			strcpy((files[number_of_files].username), pwd->pw_name);
+		}else{
+			strcpy((files[number_of_files].username), "NULL");
+		}
+		struct group* grp = getgrgid(stat_buf.st_gid);
+		if (grp != NULL){
+			strcpy((files[number_of_files].groupname), grp->gr_name);
+		}else{
+			strcpy((files[number_of_files].groupname), "NULL");
+		}
 		sprintf((files[number_of_files].size), "%ld", stat_buf.st_size);
 		//printf("%ld", files[number_of_files].stats.st_size);
 		if (strlen(files[number_of_files].username) > max_usrname_len){
