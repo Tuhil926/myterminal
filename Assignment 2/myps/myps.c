@@ -165,8 +165,14 @@ int myps(char* options){
 				fscanf(process, "%d ", &(processes[n].pid));
 			}else if (i == 1){
 				fgetc(process);
-				fscanf(process, "%s ", processes[n].process_name);
-				processes[n].process_name[strlen(processes[n].process_name) - 1] = '\0';
+				char alph;
+				int len = 0;
+				//fscanf(process, "%s ", processes[n].process_name);
+				while ((alph = fgetc(process)) != ')'){
+					processes[n].process_name[len] = alph;
+					len++;
+				}
+				processes[n].process_name[strlen(processes[n].process_name)] = '\0';
 			}else if (i == 3){
 				fscanf(process, "%d ", &(processes[n].ppid));
 			}else if (i == 38){
