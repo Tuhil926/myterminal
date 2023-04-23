@@ -172,7 +172,7 @@ int myps(char* options){
 					processes[n].process_name[len] = alph;
 					len++;
 				}
-				processes[n].process_name[len + 1] = '\0';
+				processes[n].process_name[len] = '\0';
 			}else if (i == 3){
 				fscanf(process, "%d ", &(processes[n].ppid));
 			}else if (i == 38){
